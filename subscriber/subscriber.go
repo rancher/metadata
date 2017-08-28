@@ -127,7 +127,7 @@ func (s *Subscriber) Reload() {
 func (s *Subscriber) save(request *client.MetadataSyncRequest) error {
 	base := path.Join(data, request.Generation)
 	if request.Full {
-		if err := os.RemoveAll(base); err != nil {
+		if err := os.RemoveAll(base); !os.IsNotExist(err) && err != nil {
 			return err
 		}
 	}
@@ -141,7 +141,7 @@ func (s *Subscriber) save(request *client.MetadataSyncRequest) error {
 	}
 
 	for uuid := range request.Removes {
-		if err := os.Remove(path.Join(base, uuid)); err != nil {
+		if err := os.Remove(path.Join(base, uuid)); !os.IsNotExist(err) && err != nil {
 			lastError = err
 			continue
 		}
@@ -224,7 +224,11 @@ func (s *Subscriber) restore() error {
 }
 
 func (s *Subscriber) clearGeneration() error {
-	return os.Remove(path.Join(data, generationFile))
+	err := os.Remove(path.Join(data, generationFile))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
 }
 
 func (s *Subscriber) writeAtomic(base, uuid string, obj interface{}) error {
