@@ -1,17 +1,25 @@
 package types
 
 type Host struct {
-	AgentIP         string                 `json:"agent_ip,omitempty"`
-	AgentState      string                 `json:"agent_state,omitempty"`
-	EnvironmentUUID string                 `json:"environment_uuid,omitempty"`
-	Hostname        string                 `json:"hostname,omitempty"`
-	Labels          map[string]interface{} `json:"labels,omitempty"`
-	Memory          int64                  `json:"memory,omitempty"`
-	MilliCPU        int64                  `json:"milli_cpu,omitempty"`
-	Name            string                 `json:"name,omitempty"`
-	Ports           []PublicEndpoint       `json:"ports,omitempty"`
-	State           string                 `json:"state,omitempty"`
-	UUID            string                 `json:"uuid,omitempty"`
+	AgentIP         string            `json:"agent_ip"`
+	AgentState      string            `json:"agent_state"`
+	EnvironmentUUID string            `json:"environment_uuid"`
+	Hostname        string            `json:"hostname"`
+	Labels          map[string]string `json:"labels"`
+	Memory          int64             `json:"memory"`
+	MilliCPU        int64             `json:"milli_cpu"`
+	Name            string            `json:"name"`
+	State           string            `json:"state"`
+	UUID            string            `json:"uuid"`
+}
+
+type HostResponse struct {
+	Host
+	HostDynamic
+}
+
+type HostDynamic struct {
+	MetadataKind string `json:"metadata_kind"`
 }
 
 func (h *Host) GetEnvironmentUUID() string {

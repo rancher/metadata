@@ -19,7 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rancher/go-rancher/v3"
 	"github.com/rancher/metadata/content"
-	"github.com/rancher/metadata/content/event"
+	"github.com/rancher/metadata/content/memory"
 	"github.com/rancher/metadata/subscriber"
 	"github.com/rancher/metadata/types"
 )
@@ -41,7 +41,7 @@ func New(opts *client.ClientOpts, listen string, enableXff bool) (*Server, error
 	s := &Server{
 		listen:    listen,
 		enableXff: enableXff,
-		store:     event.NewMemoryStore(context.Background()),
+		store:     memory.NewMemoryStore(context.Background()),
 	}
 
 	subscriber, err := subscriber.NewSubscriber(opts, s.store)
@@ -59,9 +59,35 @@ func (s *Server) Start() error {
 	return fmt.Errorf("Server died")
 }
 
+func (s *Server) runServer() {
+	s.watchSignals()
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/", s.root).
+		Methods("GET", "HEAD").
+		Name("Root")
+
+	router.HandleFunc("/{version}", s.metadata).
+		Methods("GET", "HEAD").
+		Name("Version")
+
+	router.HandleFunc("/{version}/{key:.*}", s.metadata).
+		Queries("wait", "true", "value", "{oldValue}").
+		Methods("GET", "HEAD").
+		Name("Wait")
+
+	router.HandleFunc("/{version}/{key:.*}", s.metadata).
+		Methods("GET", "HEAD").
+		Name("Metadata")
+
+	logrus.Info("Listening on ", s.listen)
+	logrus.Fatal(http.ListenAndServe(s.listen, router))
+}
+
 func (s *Server) lookupAnswer(wait bool, oldValue, version string, ip string, path []string, maxWait time.Duration) (interface{}, bool) {
 	if maxWait == time.Duration(0) {
-		maxWait = time.Minute
+		maxWait = 10 * time.Second
 	}
 
 	if maxWait > 2*time.Minute {
@@ -87,16 +113,25 @@ func (s *Server) lookupAnswer(wait bool, oldValue, version string, ip string, pa
 }
 
 func (s *Server) getValue(version, ip string, path []string) (interface{}, bool) {
-	env, ok := content.GetEnvironment(s.store, version, ip)
-	if !ok {
-		return nil, false
+	var root interface{}
+
+	if len(path) > 0 && path[0] == "self" {
+		root = content.NewSelfObject(version, ip, s.store)
+		path = path[1:]
+	} else {
+		env, ok := content.GetEnvironment(s.store, version, ip)
+		if !ok {
+			return nil, false
+		}
+
+		root = env
 	}
 
 	if len(path) == 0 {
-		return env, true
+		return root, true
 	}
 
-	return traverse(env, path)
+	return traverse(root, path)
 }
 
 func getIndexed(value reflect.Value, index string) (interface{}, bool) {
@@ -164,32 +199,6 @@ func (s *Server) watchSignals() {
 			s.subscriber.Reload()
 		}
 	}()
-}
-
-func (s *Server) runServer() {
-	s.watchSignals()
-
-	router := mux.NewRouter()
-
-	router.HandleFunc("/", s.root).
-		Methods("GET", "HEAD").
-		Name("Root")
-
-	router.HandleFunc("/{version}", s.metadata).
-		Methods("GET", "HEAD").
-		Name("Version")
-
-	router.HandleFunc("/{version}/{key:.*}", s.metadata).
-		Queries("wait", "true", "value", "{oldValue}").
-		Methods("GET", "HEAD").
-		Name("Wait")
-
-	router.HandleFunc("/{version}/{key:.*}", s.metadata).
-		Methods("GET", "HEAD").
-		Name("Metadata")
-
-	logrus.Info("Listening on ", s.listen)
-	logrus.Fatal(http.ListenAndServe(s.listen, router))
 }
 
 func contentType(req *http.Request) int {

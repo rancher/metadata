@@ -40,8 +40,8 @@ type IDResolution interface {
 	IDtoUUID(objectType ObjectType, id string) string
 }
 
-type ServiceIndexed interface {
-	GetServiceID() string
+type StackIndexed interface {
+	GetStackID() string
 }
 
 type EnvironmentIndexed interface {
@@ -52,11 +52,27 @@ type Store interface {
 	IDResolution
 
 	// Return types are all Object because the generic object walker for the API
-	// does not deal with concrete types such as []Container, Environment
+	// does not deal with concrete types such as []ContainerWrapper, EnvironmentWrapper
 	Environment(client Client) types.Object
 
-	ByService(objectType ObjectType, client Client, serviceUUID string) []types.Object
 	ByEnvironment(objectType ObjectType, client Client, environmentUUID string) []types.Object
+	ByStack(objectType ObjectType, client Client, stackUUID string) []types.Object
+
+	Object(uuid string, client Client) types.Object
+
+	ServiceByID(id string) *types.Service
+	StackByID(id string) *types.Stack
+	NetworkByID(id string) *types.Network
+	HostByID(id string) *types.Host
+	ContainerByID(id string) *types.Container
+	EnvironmentByUUID(environmentUUID string) *types.Environment
+
+	ServiceByName(environmentUUID, stackName, name string) *types.Service
+	ContainerByName(environmentUUID, stackName, name string) *types.Container
+
+	// Self
+	SelfContainer(client Client) *types.Container
+	SelfHost(client Client) types.Object
 
 	Reload(all map[string]interface{})
 
