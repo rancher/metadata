@@ -27,6 +27,7 @@ type ServerConfig struct {
 }
 
 func main() {
+
 	app := cli.NewApp()
 	app.Action = appMain
 	app.Version = VERSION

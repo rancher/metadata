@@ -4,25 +4,25 @@ import (
 	"github.com/rancher/metadata/types"
 )
 
-type Network struct {
+type NetworkWrapper struct {
 	Client  Client
 	Network *types.Network
 }
 
 func NewNetworkObject(obj interface{}, client Client, store Store) types.Object {
 	return &WrappedObject{
-		Wrapped: &Network{
+		Wrapped: &NetworkWrapper{
 			Client:  client,
 			Network: obj.(*types.Network),
 		},
 	}
 }
 
-func (c *Network) wrapped() interface{} {
-	//switch c.Client.Version {
-	//case V3:
-	return c.Network
-	//}
-	//
-	//return nil
+func (c *NetworkWrapper) wrapped() interface{} {
+	return &types.NetworkResponse{
+		Network: *c.Network,
+		NetworkDynamic: types.NetworkDynamic{
+			MetadataKind: "network",
+		},
+	}
 }

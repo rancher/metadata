@@ -7,6 +7,7 @@ import (
 type Stack struct {
 	Client Client
 	Stack  *types.Stack
+	Store  Store
 }
 
 func NewStackObject(obj interface{}, client Client, store Store) types.Object {
@@ -14,15 +15,24 @@ func NewStackObject(obj interface{}, client Client, store Store) types.Object {
 		Wrapped: &Stack{
 			Client: client,
 			Stack:  obj.(*types.Stack),
+			Store:  store,
 		},
 	}
 }
 
 func (c *Stack) wrapped() interface{} {
-	//switch c.Client.Version {
-	//case V3:
+	result := &types.StackResponse{
+		Stack: *c.Stack,
+		StackDynamic: types.StackDynamic{
+			MetadataKind: "stack",
+		},
+	}
+
+	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
+	if env != nil {
+		result.EnvironmentName = env.Name
+	}
+
+	result.Services = c.Store.ByStack(ServiceType, c.Client, result.UUID)
 	return c.Stack
-	//}
-	//
-	//return nil
 }

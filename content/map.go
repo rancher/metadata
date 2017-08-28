@@ -24,6 +24,16 @@ func GetValue(obj interface{}, key string) (interface{}, bool) {
 		f, ok = t.FieldByName(toCamelCase(key))
 	}
 	if !ok {
+		check := strings.ToLower(toCamelCase(key))
+		for i := 0; i < t.NumField(); i++ {
+			if strings.EqualFold(check, t.Field(i).Name) {
+				f = t.Field(i)
+				ok = true
+				break
+			}
+		}
+	}
+	if !ok {
 		return nil, false
 	}
 	return v.FieldByIndex(f.Index).Interface(), true

@@ -22,6 +22,7 @@ RUN wget -O - ${!DOCKER_URL} > /usr/bin/docker && chmod +x /usr/bin/docker
 
 ENV DAPPER_SOURCE /go/src/github.com/rancher/metadata/
 ENV DAPPER_OUTPUT ./bin ./dist
+ENV DAPPER_ENV REPO TAG CROSS
 ENV DAPPER_DOCKER_SOCKET true
 ENV TRASH_CACHE ${DAPPER_SOURCE}/.trash-cache
 ENV HOME ${DAPPER_SOURCE}

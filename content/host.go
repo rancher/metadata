@@ -4,25 +4,25 @@ import (
 	"github.com/rancher/metadata/types"
 )
 
-type Host struct {
+type HostWrapper struct {
 	Client Client
 	Host   *types.Host
 }
 
 func NewHostObject(obj interface{}, client Client, store Store) types.Object {
 	return &WrappedObject{
-		Wrapped: &Host{
+		Wrapped: &HostWrapper{
 			Client: client,
 			Host:   obj.(*types.Host),
 		},
 	}
 }
 
-func (c *Host) wrapped() interface{} {
-	//switch c.Client.Version {
-	//case V3:
-	return c.Host
-	//}
-	//
-	//return nil
+func (c *HostWrapper) wrapped() interface{} {
+	return &types.HostResponse{
+		Host: *c.Host,
+		HostDynamic: types.HostDynamic{
+			MetadataKind: "host",
+		},
+	}
 }
