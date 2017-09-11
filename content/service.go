@@ -37,6 +37,11 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		result.KindOutput = "service"
 	}
 
+	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
+	if env != nil {
+		result.EnvironmentName = env.Name
+	}
+
 	result.Containers = []types.Object{}
 	for _, containerID := range result.InstanceIDs {
 		container := c.Store.ContainerByID(containerID)

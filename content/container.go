@@ -30,6 +30,12 @@ func (c *ContainerWrapper) wrapped() interface{} {
 			MetadataKind: "container",
 		},
 	}
+
+	env := c.Store.EnvironmentByUUID(container.EnvironmentUUID)
+	if env != nil {
+		container.EnvironmentName = env.Name
+	}
+
 	container.HostUUID = c.Store.IDtoUUID(HostType, container.HostID)
 	container.NetworkFromContainerUUID = c.Store.IDtoUUID(ContainerType, container.NetworkFromContainerID)
 	container.NetworkUUID = c.Store.IDtoUUID(NetworkType, container.NetworkID)

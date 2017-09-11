@@ -34,13 +34,14 @@ type ServiceResponse struct {
 }
 
 type ServiceDynamic struct {
-	Containers   []Object `json:"containers"`
-	KindOutput   string   `json:"kind"`
-	MetadataKind string   `json:"metadata_kind"`
-	PortsOutput  []string `json:"ports"`
-	StackName    string   `json:"stack_name"`
-	StackUUID    string   `json:"stack_uuid"`
-	TokenOutput  string   `json:"token"`
+	EnvironmentName string   `json:"environment_name"`
+	Containers      []Object `json:"containers"`
+	KindOutput      string   `json:"kind"`
+	MetadataKind    string   `json:"metadata_kind"`
+	PortsOutput     []string `json:"ports"`
+	StackName       string   `json:"stack_name"`
+	StackUUID       string   `json:"stack_uuid"`
+	TokenOutput     string   `json:"token"`
 
 	LBConfigOutput *LBConfig              `json:"lb_config"`
 	LinksOutput    map[string]interface{} `json:"links"`

@@ -37,6 +37,7 @@ type ContainerResponse struct {
 }
 
 type ContainerDynamic struct {
+	EnvironmentName          string                 `json:"environment_name"`
 	HealthCheckHostsOuput    []string               `json:"health_check_hosts"`
 	HostUUID                 string                 `json:"host_uuid"`
 	IPs                      []string               `json:"ips"`
