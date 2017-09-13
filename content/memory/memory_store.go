@@ -11,8 +11,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/mitchellh/mapstructure"
+	"github.com/rancher/go-rancher/v3"
 	"github.com/rancher/metadata/content"
-	"github.com/rancher/metadata/types"
 	"golang.org/x/sync/syncmap"
 )
 
@@ -31,7 +31,7 @@ type Store struct {
 }
 
 type objectSliceWrapper struct {
-	slice []types.Object
+	slice []content.Object
 }
 
 func NewMemoryStore(ctx context.Context) *Store {
@@ -70,23 +70,23 @@ func (m *Store) getObjectMap(objectType content.ObjectType) *syncmap.Map {
 	return val.(*syncmap.Map)
 }
 
-func (m *Store) Environment(c content.Client) types.Object {
-	var result *types.Environment
+func (m *Store) Environment(c content.Client) content.Object {
+	var result *client.EnvironmentInfo
 
 	environments := m.getObjectMap(content.EnvironmentType)
 	container := m.instanceByIP(c.IP)
 	if container == nil {
 		environments.Range(func(key, value interface{}) bool {
-			if value.(*types.Environment).System {
-				result = value.(*types.Environment)
+			if value.(*client.EnvironmentInfo).System {
+				result = value.(*client.EnvironmentInfo)
 				return false
 			}
 			return true
 		})
 	} else {
 		environments.Range(func(key, value interface{}) bool {
-			if value.(*types.Environment).UUID == container.EnvironmentUUID {
-				result = value.(*types.Environment)
+			if value.(*client.EnvironmentInfo).Uuid == container.EnvironmentUuid {
+				result = value.(*client.EnvironmentInfo)
 				return false
 			}
 			return true
@@ -97,16 +97,16 @@ func (m *Store) Environment(c content.Client) types.Object {
 		return nil
 	}
 
-	return content.NewEnvironmentObject(result, c, m)
+	return content.ObjectFactories[content.EnvironmentType](result, c, m)
 }
 
-func (m *Store) ServiceByName(environmentUUID, stackName, name string) *types.Service {
-	var result *types.Service
-	var stack *types.Stack
+func (m *Store) ServiceByName(environmentUUID, stackName, name string) *client.ServiceInfo {
+	var result *client.ServiceInfo
+	var stack *client.StackInfo
 
 	m.getObjectMap(content.StackType).Range(func(key, value interface{}) bool {
-		obj := value.(*types.Stack)
-		if obj.EnvironmentUUID == environmentUUID && strings.EqualFold(obj.Name, stackName) {
+		obj := value.(*client.StackInfo)
+		if obj.EnvironmentUuid == environmentUUID && strings.EqualFold(obj.Name, stackName) {
 			stack = obj
 			return false
 		}
@@ -118,8 +118,8 @@ func (m *Store) ServiceByName(environmentUUID, stackName, name string) *types.Se
 	}
 
 	m.getObjectMap(content.ServiceType).Range(func(key, value interface{}) bool {
-		obj := value.(*types.Service)
-		if obj.EnvironmentUUID == environmentUUID && obj.StackID == stack.ID && strings.EqualFold(obj.Name, name) {
+		obj := value.(*client.ServiceInfo)
+		if obj.EnvironmentUuid == environmentUUID && obj.StackId == stack.InfoTypeId && strings.EqualFold(obj.Name, name) {
 			result = obj
 			return false
 		}
@@ -130,13 +130,13 @@ func (m *Store) ServiceByName(environmentUUID, stackName, name string) *types.Se
 
 }
 
-func (m *Store) ContainerByName(environmentUUID, stackName, name string) *types.Container {
-	var result *types.Container
-	var stack *types.Stack
+func (m *Store) ContainerByName(environmentUUID, stackName, name string) *client.InstanceInfo {
+	var result *client.InstanceInfo
+	var stack *client.StackInfo
 
 	m.getObjectMap(content.StackType).Range(func(key, value interface{}) bool {
-		obj := value.(*types.Stack)
-		if obj.EnvironmentUUID == environmentUUID && strings.EqualFold(obj.Name, stackName) {
+		obj := value.(*client.StackInfo)
+		if obj.EnvironmentUuid == environmentUUID && strings.EqualFold(obj.Name, stackName) {
 			stack = obj
 			return false
 		}
@@ -148,8 +148,8 @@ func (m *Store) ContainerByName(environmentUUID, stackName, name string) *types.
 	}
 
 	m.getObjectMap(content.ContainerType).Range(func(key, value interface{}) bool {
-		obj := value.(*types.Container)
-		if obj.EnvironmentUUID == environmentUUID && obj.StackID == stack.ID && strings.EqualFold(obj.Name, name) {
+		obj := value.(*client.InstanceInfo)
+		if obj.EnvironmentUuid == environmentUUID && obj.StackId == stack.Id && strings.EqualFold(obj.Name, name) {
 			result = obj
 			return false
 		}
@@ -159,14 +159,14 @@ func (m *Store) ContainerByName(environmentUUID, stackName, name string) *types.
 	return result
 }
 
-func (m *Store) ByStack(objectType content.ObjectType, c content.Client, stackUUID string) []types.Object {
+func (m *Store) ByStack(objectType content.ObjectType, c content.Client, stackUUID string) []content.Object {
 	result := objectSliceWrapper{}
 	objects := m.getObjectMap(objectType)
 
 	objects.Range(func(key, value interface{}) bool {
-		indexed, ok := value.(content.StackIndexed)
+		stackID, ok := getString(value, "StackId")
 		if ok {
-			if m.IDtoUUID(content.StackType, indexed.GetStackID()) == stackUUID {
+			if m.IDtoUUID(content.StackType, stackID) == stackUUID {
 				result.slice = append(result.slice, m.newObject(objectType, value, c))
 			}
 		}
@@ -176,11 +176,20 @@ func (m *Store) ByStack(objectType content.ObjectType, c content.Client, stackUU
 	return result.slice
 }
 
-func (m *Store) newObject(objectType content.ObjectType, obj interface{}, c content.Client) types.Object {
+func getString(obj interface{}, key string) (string, bool) {
+	val, ok := content.GetValue(obj, key)
+	if !ok {
+		return "", false
+	}
+	str, ok := val.(string)
+	return str, ok
+}
+
+func (m *Store) newObject(objectType content.ObjectType, obj interface{}, c content.Client) content.Object {
 	return content.ObjectFactories[objectType](obj, c, m)
 }
 
-func (m *Store) ByEnvironment(objectType content.ObjectType, c content.Client, environmentUUID string) []types.Object {
+func (m *Store) ByEnvironment(objectType content.ObjectType, c content.Client, environmentUUID string) []content.Object {
 	result := objectSliceWrapper{}
 
 	env, ok := m.getEnv(environmentUUID)
@@ -189,9 +198,9 @@ func (m *Store) ByEnvironment(objectType content.ObjectType, c content.Client, e
 	}
 
 	m.getObjectMap(objectType).Range(func(key, value interface{}) bool {
-		indexed, ok := value.(content.EnvironmentIndexed)
+		testUUID, ok := getString(value, "EnvironmentUuid")
 		if ok {
-			if env.System || indexed.GetEnvironmentUUID() == environmentUUID {
+			if env.System || testUUID == environmentUUID {
 				result.slice = append(result.slice, m.newObject(objectType, value, c))
 			}
 		}
@@ -201,18 +210,18 @@ func (m *Store) ByEnvironment(objectType content.ObjectType, c content.Client, e
 	return result.slice
 }
 
-func (m *Store) getEnv(uuid string) (*types.Environment, bool) {
+func (m *Store) getEnv(uuid string) (*client.EnvironmentInfo, bool) {
 	val, _ := m.d.all.Load(uuid)
-	env, ok := val.(*types.Environment)
+	env, ok := val.(*client.EnvironmentInfo)
 	return env, ok
 }
 
-func (m *Store) instanceByIP(clientIP string) *types.Container {
-	var result *types.Container
+func (m *Store) instanceByIP(clientIP string) *client.InstanceInfo {
+	var result *client.InstanceInfo
 
 	m.getObjectMap(content.ContainerType).Range(func(key, value interface{}) bool {
-		instance := value.(*types.Container)
-		if instance.PrimaryIP == clientIP {
+		instance := value.(*client.InstanceInfo)
+		if instance.PrimaryIp == clientIP {
 			result = instance
 			return false
 		}
@@ -257,22 +266,26 @@ func (m *Store) Add(val map[string]interface{}) {
 		return
 	}
 
+	// copy map since we are changing a value
+	val = copyMap(val)
+	val["id"] = id
+
 	var rawVal interface{}
 	objectType := content.ObjectType(infoType)
 
 	switch objectType {
 	case content.ContainerType:
-		rawVal = &types.Container{}
+		rawVal = &client.InstanceInfo{}
 	case content.ServiceType:
-		rawVal = &types.Service{}
+		rawVal = &client.ServiceInfo{}
 	case content.StackType:
-		rawVal = &types.Stack{}
+		rawVal = &client.StackInfo{}
 	case content.NetworkType:
-		rawVal = &types.Network{}
+		rawVal = &client.NetworkInfo{}
 	case content.HostType:
-		rawVal = &types.Host{}
+		rawVal = &client.HostInfo{}
 	case content.EnvironmentType:
-		rawVal = &types.Environment{}
+		rawVal = &client.EnvironmentInfo{}
 	}
 
 	if rawVal != nil {
@@ -284,6 +297,14 @@ func (m *Store) Add(val map[string]interface{}) {
 		m.version++
 		m.Changed()
 	}
+}
+
+func copyMap(val map[string]interface{}) map[string]interface{} {
+	result := map[string]interface{}{}
+	for k, v := range val {
+		result[k] = v
+	}
+	return result
 }
 
 func decodeAndLog(m interface{}, rawVal interface{}) interface{} {
@@ -318,11 +339,11 @@ func (m *Store) Remove(val map[string]interface{}) {
 	m.Changed()
 }
 
-func (m *Store) SelfContainer(c content.Client) *types.Container {
+func (m *Store) SelfContainer(c content.Client) *client.InstanceInfo {
 	return m.instanceByIP(c.IP)
 }
 
-func (m *Store) SelfHost(c content.Client) types.Object {
+func (m *Store) SelfHost(c content.Client) content.Object {
 	hostname, err := os.Hostname()
 	if err != nil {
 		logrus.Errorf("Failed to get hostname: %v", err)
@@ -334,11 +355,11 @@ func (m *Store) SelfHost(c content.Client) types.Object {
 		hostname = hostname[i:]
 	}
 
-	var result *types.Container
+	var result *client.InstanceInfo
 
 	m.getObjectMap(content.ContainerType).Range(func(key, value interface{}) bool {
-		instance := value.(*types.Container)
-		if strings.HasPrefix(instance.ExternalID, hostname) {
+		instance := value.(*client.InstanceInfo)
+		if strings.HasPrefix(instance.ExternalId, hostname) {
 			result = instance
 			return false
 		}
@@ -349,11 +370,11 @@ func (m *Store) SelfHost(c content.Client) types.Object {
 		return nil
 	}
 
-	return m.Object(m.IDtoUUID(content.HostType, result.HostID), c)
+	return m.Object(m.IDtoUUID(content.HostType, result.HostId), c)
 }
 
-func (m *Store) Object(uuid string, c content.Client) types.Object {
-	var result types.Object
+func (m *Store) Object(uuid string, c content.Client) content.Object {
+	var result content.Object
 	m.d.objects.Range(func(key, value interface{}) bool {
 		data := value.(*syncmap.Map)
 		found, ok := data.Load(uuid)
@@ -382,50 +403,50 @@ func (m *Store) Version() string {
 	return strconv.Itoa(m.version)
 }
 
-func (m *Store) ServiceByID(id string) *types.Service {
+func (m *Store) ServiceByID(id string) *client.ServiceInfo {
 	val, ok := m.getObjectMap(content.ServiceType).Load(m.IDtoUUID(content.ServiceType, id))
 	if ok {
-		return val.(*types.Service)
+		return val.(*client.ServiceInfo)
 	}
 	return nil
 }
 
-func (m *Store) StackByID(id string) *types.Stack {
+func (m *Store) StackByID(id string) *client.StackInfo {
 	val, ok := m.getObjectMap(content.StackType).Load(m.IDtoUUID(content.StackType, id))
 	if ok {
-		return val.(*types.Stack)
+		return val.(*client.StackInfo)
 	}
 	return nil
 }
 
-func (m *Store) HostByID(id string) *types.Host {
+func (m *Store) HostByID(id string) *client.HostInfo {
 	val, ok := m.getObjectMap(content.HostType).Load(m.IDtoUUID(content.HostType, id))
 	if ok {
-		return val.(*types.Host)
+		return val.(*client.HostInfo)
 	}
 	return nil
 }
 
-func (m *Store) NetworkByID(id string) *types.Network {
+func (m *Store) NetworkByID(id string) *client.NetworkInfo {
 	val, ok := m.getObjectMap(content.NetworkType).Load(m.IDtoUUID(content.NetworkType, id))
 	if ok {
-		return val.(*types.Network)
+		return val.(*client.NetworkInfo)
 	}
 	return nil
 }
 
-func (m *Store) ContainerByID(id string) *types.Container {
+func (m *Store) ContainerByID(id string) *client.InstanceInfo {
 	val, ok := m.getObjectMap(content.ContainerType).Load(m.IDtoUUID(content.ContainerType, id))
 	if ok {
-		return val.(*types.Container)
+		return val.(*client.InstanceInfo)
 	}
 	return nil
 }
 
-func (m *Store) EnvironmentByUUID(uuid string) *types.Environment {
+func (m *Store) EnvironmentByUUID(uuid string) *client.EnvironmentInfo {
 	val, ok := m.getObjectMap(content.EnvironmentType).Load(uuid)
 	if ok {
-		return val.(*types.Environment)
+		return val.(*client.EnvironmentInfo)
 	}
 	return nil
 }

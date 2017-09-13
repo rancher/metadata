@@ -1,6 +1,6 @@
 package types
 
-type Host struct {
+type HostResponse struct {
 	AgentIP         string            `json:"agent_ip"`
 	AgentState      string            `json:"agent_state"`
 	EnvironmentUUID string            `json:"environment_uuid"`
@@ -11,17 +11,6 @@ type Host struct {
 	Name            string            `json:"name"`
 	State           string            `json:"state"`
 	UUID            string            `json:"uuid"`
-}
 
-type HostResponse struct {
-	Host
-	HostDynamic
-}
-
-type HostDynamic struct {
 	MetadataKind string `json:"metadata_kind"`
-}
-
-func (h *Host) GetEnvironmentUUID() string {
-	return h.EnvironmentUUID
 }

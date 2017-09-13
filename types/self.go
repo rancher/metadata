@@ -1,10 +1,12 @@
 package types
 
+import "github.com/rancher/metadata/content"
+
 type MetadataSelf struct {
-	Container   Object `json:"container"`
-	Service     Object `json:"service"`
-	Host        Object `json:"host"`
-	Environment Object `json:"environment"`
-	Network     Object `json:"network"`
-	Stack       Object `json:"stack"`
+	Container   content.Object `json:"container"`
+	Service     content.Object `json:"service"`
+	Host        content.Object `json:"host"`
+	Environment content.Object `json:"environment"`
+	Network     content.Object `json:"network"`
+	Stack       content.Object `json:"stack"`
 }

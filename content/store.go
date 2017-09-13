@@ -1,7 +1,7 @@
 package content
 
 import (
-	"github.com/rancher/metadata/types"
+	"github.com/rancher/go-rancher/v3"
 )
 
 const (
@@ -22,30 +22,15 @@ var (
 		HostType,
 		EnvironmentType,
 	}
-	ObjectFactories = map[ObjectType]ObjectFactory{
-		ContainerType:   NewContainerObject,
-		ServiceType:     NewServiceObject,
-		StackType:       NewStackObject,
-		NetworkType:     NewNetworkObject,
-		HostType:        NewHostObject,
-		EnvironmentType: NewEnvironmentObject,
-	}
+	ObjectFactories = map[ObjectType]ObjectFactory{}
 )
 
 type ObjectType string
 
-type ObjectFactory func(obj interface{}, client Client, store Store) types.Object
+type ObjectFactory func(obj interface{}, client Client, store Store) Object
 
 type IDResolution interface {
 	IDtoUUID(objectType ObjectType, id string) string
-}
-
-type StackIndexed interface {
-	GetStackID() string
-}
-
-type EnvironmentIndexed interface {
-	GetEnvironmentUUID() string
 }
 
 type Store interface {
@@ -53,26 +38,26 @@ type Store interface {
 
 	// Return types are all Object because the generic object walker for the API
 	// does not deal with concrete types such as []ContainerWrapper, EnvironmentWrapper
-	Environment(client Client) types.Object
+	Environment(client Client) Object
 
-	ByEnvironment(objectType ObjectType, client Client, environmentUUID string) []types.Object
-	ByStack(objectType ObjectType, client Client, stackUUID string) []types.Object
+	ByEnvironment(objectType ObjectType, client Client, environmentUUID string) []Object
+	ByStack(objectType ObjectType, client Client, stackUUID string) []Object
 
-	Object(uuid string, client Client) types.Object
+	Object(uuid string, client Client) Object
 
-	ServiceByID(id string) *types.Service
-	StackByID(id string) *types.Stack
-	NetworkByID(id string) *types.Network
-	HostByID(id string) *types.Host
-	ContainerByID(id string) *types.Container
-	EnvironmentByUUID(environmentUUID string) *types.Environment
+	ServiceByID(id string) *client.ServiceInfo
+	StackByID(id string) *client.StackInfo
+	NetworkByID(id string) *client.NetworkInfo
+	HostByID(id string) *client.HostInfo
+	ContainerByID(id string) *client.InstanceInfo
+	EnvironmentByUUID(environmentUUID string) *client.EnvironmentInfo
 
-	ServiceByName(environmentUUID, stackName, name string) *types.Service
-	ContainerByName(environmentUUID, stackName, name string) *types.Container
+	ServiceByName(environmentUUID, stackName, name string) *client.ServiceInfo
+	ContainerByName(environmentUUID, stackName, name string) *client.InstanceInfo
 
 	// Self
-	SelfContainer(client Client) *types.Container
-	SelfHost(client Client) types.Object
+	SelfContainer(client Client) *client.InstanceInfo
+	SelfHost(client Client) Object
 
 	Reload(all map[string]interface{})
 

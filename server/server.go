@@ -21,7 +21,7 @@ import (
 	"github.com/rancher/metadata/content"
 	"github.com/rancher/metadata/content/memory"
 	"github.com/rancher/metadata/subscriber"
-	"github.com/rancher/metadata/types"
+	"github.com/rancher/metadata/types/convert"
 )
 
 const (
@@ -116,7 +116,7 @@ func (s *Server) getValue(version, ip string, path []string) (interface{}, bool)
 	var root interface{}
 
 	if len(path) > 0 && path[0] == "self" {
-		root = content.NewSelfObject(version, ip, s.store)
+		root = convert.NewSelfObject(version, ip, s.store)
 		path = path[1:]
 	} else {
 		env, ok := content.GetEnvironment(s.store, version, ip)
@@ -164,7 +164,7 @@ func traverse(in interface{}, path []string) (interface{}, bool) {
 		valid := false
 
 		switch v := out.(type) {
-		case types.Object:
+		case content.Object:
 			out, valid = v.Get(key)
 			if !valid {
 				out, valid = v.Get(strings.ToLower(key))

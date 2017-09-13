@@ -1,4 +1,4 @@
-package types
+package content
 
 type Object interface {
 	Get(key string) (interface{}, bool)

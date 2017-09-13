@@ -81,6 +81,8 @@ func (s *Subscriber) sync(event *events.Event, c *client.RancherClient) error {
 	s.Lock()
 	defer s.Unlock()
 
+	start := time.Now()
+
 	reload := false
 	request := &client.MetadataSyncRequest{}
 	if err := mapstructure.Decode(event.Data["metadataSyncRequest"], request); err != nil {
@@ -108,6 +110,7 @@ func (s *Subscriber) sync(event *events.Event, c *client.RancherClient) error {
 		reload = true
 	}
 
+	publishStart := time.Now()
 	_, err := c.Publish.Create(&client.Publish{
 		Name:       event.ReplyTo,
 		PreviousId: event.ID,
@@ -115,6 +118,9 @@ func (s *Subscriber) sync(event *events.Event, c *client.RancherClient) error {
 			"reload": reload,
 		},
 	})
+
+	end := time.Now()
+	logrus.Debugf("Processing done after %v and %v to post", end.Sub(start), publishStart.Sub(publishStart))
 
 	return err
 }

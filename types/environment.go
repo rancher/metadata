@@ -1,22 +1,17 @@
 package types
 
-type Environment struct {
+import "github.com/rancher/metadata/content"
+
+type EnvironmentResponse struct {
 	Name       string `json:"name"`
 	ExternalID string `json:"external_id"`
 	System     bool   `json:"system"`
 	UUID       string `json:"uuid"`
-}
 
-type EnvironmentResponse struct {
-	Environment
-	EnvironmentDynamic
-}
-
-type EnvironmentDynamic struct {
-	Containers []Object `json:"containers"`
-	Services   []Object `json:"services"`
-	Networks   []Object `json:"networks"`
-	Hosts      []Object `json:"hosts"`
-	Stacks     []Object `json:"stacks"`
-	Version    string   `json:"version"`
+	Containers []content.Object `json:"containers"`
+	Services   []content.Object `json:"services"`
+	Networks   []content.Object `json:"networks"`
+	Hosts      []content.Object `json:"hosts"`
+	Stacks     []content.Object `json:"stacks"`
+	Version    string           `json:"version"`
 }

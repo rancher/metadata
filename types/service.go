@@ -1,8 +1,8 @@
 package types
 
-import "github.com/rancher/go-rancher/v3"
+import "github.com/rancher/metadata/content"
 
-type Service struct {
+type ServiceResponse struct {
 	EnvironmentUUID string                 `json:"environment_uuid"`
 	ExternalIPs     []string               `json:"external_ips"`
 	FQDN            string                 `json:"fqdn"`
@@ -10,48 +10,26 @@ type Service struct {
 	HealthCheck     *HealthcheckInfo       `json:"health_check"`
 	HealthState     string                 `json:"health_state"`
 	Hostname        string                 `json:"hostname"`
-	InstanceIDs     []string               `json:"-"`
-	Kind            string                 `json:"-"`
 	Labels          map[string]string      `json:"labels"`
-	LBConfig        *client.LbConfig       `json:"-"`
-	Links           []Link                 `json:"-"`
 	Metadata        map[string]interface{} `json:"metadata"`
 	Name            string                 `json:"name"`
-	Ports           []PublicEndpoint       `json:"-"`
 	Scale           int64                  `json:"scale"`
 	Selector        string                 `json:"selector"`
 	Sidekicks       []string               `json:"sidekicks"`
-	StackID         string                 `json:"-"`
 	State           string                 `json:"state"`
-	Token           string                 `json:"-"`
 	UUID            string                 `json:"uuid"`
 	VIP             string                 `json:"vip"`
-}
 
-type ServiceResponse struct {
-	Service
-	ServiceDynamic
-}
+	Containers   []content.Object `json:"containers"`
+	Kind         string           `json:"kind"`
+	MetadataKind string           `json:"metadata_kind"`
+	Ports        []string         `json:"ports"`
+	StackName    string           `json:"stack_name"`
+	StackUUID    string           `json:"stack_uuid"`
+	Token        string           `json:"token"`
 
-type ServiceDynamic struct {
-	Containers   []Object `json:"containers"`
-	KindOutput   string   `json:"kind"`
-	MetadataKind string   `json:"metadata_kind"`
-	PortsOutput  []string `json:"ports"`
-	StackName    string   `json:"stack_name"`
-	StackUUID    string   `json:"stack_uuid"`
-	TokenOutput  string   `json:"token"`
-
-	LBConfigOutput *LBConfig              `json:"lb_config"`
-	LinksOutput    map[string]interface{} `json:"links"`
-}
-
-func (s *Service) GetEnvironmentUUID() string {
-	return s.EnvironmentUUID
-}
-
-func (s *Service) GetStackID() string {
-	return s.StackID
+	LBConfig *LBConfig              `json:"lb_config"`
+	Links    map[string]interface{} `json:"links"`
 }
 
 type LBConfig struct {
