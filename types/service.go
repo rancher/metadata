@@ -19,6 +19,7 @@ type ServiceResponse struct {
 	State           string                 `json:"state"`
 	UUID            string                 `json:"uuid"`
 	VIP             string                 `json:"vip"`
+	EnvironmentName string                 `json:"environment_name"`
 
 	Containers   []content.Object `json:"containers"`
 	Kind         string           `json:"kind"`

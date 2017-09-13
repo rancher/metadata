@@ -104,6 +104,10 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	}
 
 	container.Links = resolveContainerLinks(&container, c.Container, c.Store)
+	env := c.Store.EnvironmentByUUID(container.EnvironmentUUID)
+	if env != nil {
+		container.EnvironmentName = env.Name
+	}
 	return &container
 }
 

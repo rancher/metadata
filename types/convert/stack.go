@@ -38,5 +38,5 @@ func (c *Stack) wrapped() interface{} {
 	}
 
 	result.Services = c.Store.ByStack(content.ServiceType, c.Client, result.UUID)
-	return c.Stack
+	return result
 }
