@@ -3,12 +3,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rancher/metadata/types"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/rancher/metadata/content"
 )
 
 func respondError(w http.ResponseWriter, req *http.Request, msg string, statusCode int) {
@@ -46,7 +47,7 @@ func respondText(w http.ResponseWriter, req *http.Request, val interface{}) {
 		return
 	}
 
-	if obj, ok := val.(types.Object); ok {
+	if obj, ok := val.(content.Object); ok {
 		mapObj, err := obj.Map()
 		if err != nil {
 			respondError(w, req, err.Error(), 500)

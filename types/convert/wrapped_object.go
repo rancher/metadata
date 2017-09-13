@@ -1,8 +1,10 @@
-package content
+package convert
 
 import (
 	"encoding/json"
 	"reflect"
+
+	"github.com/rancher/metadata/content"
 )
 
 type wrapped interface {
@@ -14,7 +16,7 @@ type WrappedObject struct {
 }
 
 func (w *WrappedObject) Get(key string) (interface{}, bool) {
-	return GetValue(w.Wrapped.wrapped(), key)
+	return content.GetValue(w.Wrapped.wrapped(), key)
 }
 
 func (w *WrappedObject) Map() (map[string]interface{}, error) {

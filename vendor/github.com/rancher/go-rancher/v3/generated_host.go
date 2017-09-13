@@ -25,6 +25,8 @@ type Host struct {
 
 	Created string `json:"created,omitempty" yaml:"created,omitempty"`
 
+	Data map[string]interface{} `json:"data,omitempty" yaml:"data,omitempty"`
+
 	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 
 	DigitaloceanConfig *DigitaloceanConfig `json:"digitaloceanConfig,omitempty" yaml:"digitalocean_config,omitempty"`
@@ -33,15 +35,15 @@ type Host struct {
 
 	Driver string `json:"driver,omitempty" yaml:"driver,omitempty"`
 
-	EngineEnv map[string]interface{} `json:"engineEnv,omitempty" yaml:"engine_env,omitempty"`
+	EngineEnv map[string]string `json:"engineEnv,omitempty" yaml:"engine_env,omitempty"`
 
 	EngineInsecureRegistry []string `json:"engineInsecureRegistry,omitempty" yaml:"engine_insecure_registry,omitempty"`
 
 	EngineInstallUrl string `json:"engineInstallUrl,omitempty" yaml:"engine_install_url,omitempty"`
 
-	EngineLabel map[string]interface{} `json:"engineLabel,omitempty" yaml:"engine_label,omitempty"`
+	EngineLabel map[string]string `json:"engineLabel,omitempty" yaml:"engine_label,omitempty"`
 
-	EngineOpt map[string]interface{} `json:"engineOpt,omitempty" yaml:"engine_opt,omitempty"`
+	EngineOpt map[string]string `json:"engineOpt,omitempty" yaml:"engine_opt,omitempty"`
 
 	EngineRegistryMirror []string `json:"engineRegistryMirror,omitempty" yaml:"engine_registry_mirror,omitempty"`
 
@@ -61,7 +63,7 @@ type Host struct {
 
 	Kind string `json:"kind,omitempty" yaml:"kind,omitempty"`
 
-	Labels map[string]interface{} `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 
 	LocalStorageMb int64 `json:"localStorageMb,omitempty" yaml:"local_storage_mb,omitempty"`
 
@@ -70,6 +72,8 @@ type Host struct {
 	MilliCpu int64 `json:"milliCpu,omitempty" yaml:"milli_cpu,omitempty"`
 
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+
+	NodeName string `json:"nodeName,omitempty" yaml:"node_name,omitempty"`
 
 	PacketConfig *PacketConfig `json:"packetConfig,omitempty" yaml:"packet_config,omitempty"`
 

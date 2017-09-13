@@ -36,6 +36,9 @@ func GetValue(obj interface{}, key string) (interface{}, bool) {
 	if !ok {
 		return nil, false
 	}
+	if strings.SplitN(f.Tag.Get("json"), ",", 2)[0] == "-" {
+		return nil, false
+	}
 	return v.FieldByIndex(f.Index).Interface(), true
 }
 

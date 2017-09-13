@@ -2,50 +2,34 @@ package types
 
 import "fmt"
 
-type Container struct {
-	CreateIndex            int64                  `json:"create_index"`
-	DNS                    []string               `json:"dns"`
-	DNSSearch              []string               `json:"dns_search"`
-	EnvironmentUUID        string                 `json:"environment_uuid"`
-	ExternalID             string                 `json:"external_id"`
-	HealthCheck            *HealthcheckInfo       `json:"health_check"`
-	HealthCheckHosts       []HealthcheckState     `json:"-"`
-	HealthState            *string                `json:"health_state"`
-	HostID                 string                 `json:"-"`
-	Hostname               string                 `json:"hostname"`
-	Labels                 map[string]interface{} `json:"labels"`
-	Links                  []Link                 `json:"-"`
-	MemoryReservation      int64                  `json:"memory_reservation"`
-	MilliCPUReservation    int64                  `json:"milli_cpu_reservation"`
-	Name                   string                 `json:"name"`
-	NetworkFromContainerID string                 `json:"-"`
-	NetworkID              string                 `json:"-"`
-	Ports                  []PublicEndpoint       `json:"-"`
-	PrimaryIP              string                 `json:"primary_ip"`
-	PrimaryMacAddress      string                 `json:"primary_mac_address"`
-	ServiceID              string                 `json:"-"`
-	ServiceIndex           int64                  `json:"-"`
-	StackID                string                 `json:"-"`
-	StartCount             int64                  `json:"start_count"`
-	State                  string                 `json:"state"`
-	UUID                   string                 `json:"uuid"`
-}
-
 type ContainerResponse struct {
-	Container
-	ContainerDynamic
-}
+	CreateIndex         int64             `json:"create_index"`
+	DNS                 []string          `json:"dns"`
+	DNSSearch           []string          `json:"dns_search"`
+	EnvironmentUUID     string            `json:"environment_uuid"`
+	ExternalID          string            `json:"external_id"`
+	HealthCheck         *HealthcheckInfo  `json:"health_check"`
+	HealthState         *string           `json:"health_state"`
+	Hostname            string            `json:"hostname"`
+	Labels              map[string]string `json:"labels"`
+	MemoryReservation   int64             `json:"memory_reservation"`
+	MilliCPUReservation int64             `json:"milli_cpu_reservation"`
+	Name                string            `json:"name"`
+	PrimaryIP           string            `json:"primary_ip"`
+	PrimaryMacAddress   string            `json:"primary_mac_address"`
+	StartCount          int64             `json:"start_count"`
+	State               string            `json:"state"`
+	UUID                string            `json:"uuid"`
 
-type ContainerDynamic struct {
-	HealthCheckHostsOuput    []string               `json:"health_check_hosts"`
+	HealthCheckHosts         []string               `json:"health_check_hosts"`
 	HostUUID                 string                 `json:"host_uuid"`
 	IPs                      []string               `json:"ips"`
-	LinksOutput              map[string]interface{} `json:"links"`
+	Links                    map[string]interface{} `json:"links"`
 	MetadataKind             string                 `json:"metadata_kind"`
 	NetworkFromContainerUUID string                 `json:"network_from_container_uuid"`
 	NetworkUUID              string                 `json:"network_uuid"`
-	PortsOutput              []string               `json:"ports"`
-	ServiceIndexOutput       string                 `json:"service_index"`
+	Ports                    []string               `json:"ports"`
+	ServiceIndex             string                 `json:"service_index"`
 	ServiceUUID              string                 `json:"service_uuid"`
 	ServiceName              string                 `json:"service_name"`
 	StackUUID                string                 `json:"stack_uuid"`
@@ -88,8 +72,4 @@ type PublicEndpoint struct {
 
 func (p PublicEndpoint) String() string {
 	return fmt.Sprintf("%s:%d:%d/%s", p.BindIPAddress, p.PublicPort, p.PrivatePort, p.Protocol)
-}
-
-func (c *Container) GetEnvironmentUUID() string {
-	return c.EnvironmentUUID
 }
