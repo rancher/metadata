@@ -20,6 +20,7 @@ type ContainerResponse struct {
 	StartCount          int64             `json:"start_count"`
 	State               string            `json:"state"`
 	UUID                string            `json:"uuid"`
+	EnvironmentName     string            `json:"environment_name"`
 
 	HealthCheckHosts         []string               `json:"health_check_hosts"`
 	HostUUID                 string                 `json:"host_uuid"`

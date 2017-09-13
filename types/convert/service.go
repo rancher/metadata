@@ -103,6 +103,11 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	result.LBConfig = generateLBConfig(result, c.Service, c.Store)
 	result.Links = resolveServiceLinks(result, c.Service, c.Store)
 
+	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
+	if env != nil {
+		result.EnvironmentName = env.Name
+	}
+
 	return result
 }
 
