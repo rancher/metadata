@@ -133,7 +133,7 @@ func generateLBConfig(response *types.ServiceResponse, service *client.ServiceIn
 			Postonly: service.LbConfig.StickinessPolicy.Postonly,
 		}
 	}
-
+	var ports []types.PortRule
 	for _, rule := range service.LbConfig.PortRules {
 		newRule := types.PortRule{
 			BackendName: rule.BackendName,
@@ -160,8 +160,9 @@ func generateLBConfig(response *types.ServiceResponse, service *client.ServiceIn
 				newRule.ServiceUUID = target.Uuid
 			}
 		}
+		ports = append(ports, newRule)
 	}
-
+	result.PortRules = ports
 	return result
 }
 
