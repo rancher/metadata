@@ -3,12 +3,16 @@ package main
 import (
 	"os"
 
+	"context"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/gorilla/mux"
 	"github.com/rancher/go-rancher/v3"
 	"github.com/rancher/metadata/content"
+	"github.com/rancher/metadata/k8sproxy"
 	"github.com/rancher/metadata/server"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -42,8 +46,32 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "listen",
-			Value: ":80",
+			Value: "169.254.169.250:9346",
 			Usage: "Address to listen to (TCP)",
+		},
+		cli.BoolFlag{
+			Name:  "k8s-proxy",
+			Usage: "Setup k8s api proxy on localhost",
+		},
+		cli.StringFlag{
+			Name:  "k8s-proxy-http-listen",
+			Value: "169.254.169.250:9347",
+			Usage: "Address to listen to (HTTP)",
+		},
+		cli.StringFlag{
+			Name:  "k8s-proxy-https-listen",
+			Value: "169.254.169.250:9348",
+			Usage: "Address to listen to (HTTPS)",
+		},
+		cli.StringFlag{
+			Name:  "cert-file",
+			Value: "/etc/kubernetes/ssl/cert.pem",
+			Usage: "TLS cert for k8s proxy",
+		},
+		cli.StringFlag{
+			Name:  "key-file",
+			Value: "/etc/kubernetes/ssl/key.pem",
+			Usage: "Private key for k8s proxy",
 		},
 		cli.StringFlag{
 			Name:   "access-key",
@@ -98,6 +126,27 @@ func appMain(ctx *cli.Context) error {
 		return err
 	}
 
+	group, _ := errgroup.WithContext(context.Background())
+	group.Go(s.Start)
+
+	if ctx.GlobalBool("k8s-proxy") {
+		c, err := client.NewRancherClient(opts)
+		if err != nil {
+			return err
+		}
+
+		proxy, err := k8sproxy.New(c,
+			ctx.GlobalString("k8s-proxy-http-listen"),
+			ctx.GlobalString("k8s-proxy-https-listen"),
+			ctx.GlobalString("cert-file"),
+			ctx.GlobalString("key-file"))
+		if err != nil {
+			return err
+		}
+
+		group.Go(proxy.ListenAndServe)
+	}
+
 	// Start the server
-	return s.Start()
+	return group.Wait()
 }

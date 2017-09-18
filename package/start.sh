@@ -6,7 +6,7 @@ if ! ip addr show dev lo | grep -q '169.254.169.250'; then
 fi
 
 echo Adding iptables rules
-RANCHER_METADATA_LISTEN_PORT=${RANCHER_METADATA_LISTEN_PORT:-9999}
+RANCHER_METADATA_LISTEN_PORT=${RANCHER_METADATA_LISTEN_PORT:-9346}
 
 if ! iptables -t nat -n -L CATTLE_PREROUTING &> /dev/null; then
     iptables -t nat -N CATTLE_PREROUTING
