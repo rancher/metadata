@@ -3,11 +3,12 @@ package memory
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"io/ioutil"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/mitchellh/mapstructure"
@@ -17,6 +18,10 @@ import (
 )
 
 //TODO: replace this stupidity with RDBMS or an indexed kv
+
+var (
+	selfHostID = ""
+)
 
 type storeData struct {
 	objects syncmap.Map // string(objectType) => string(uuid) => *types.(EnvironmentWrapper|Instance|...)
@@ -344,33 +349,53 @@ func (m *Store) SelfContainer(c content.Client) *client.InstanceInfo {
 }
 
 func (m *Store) SelfHost(c content.Client) content.Object {
-	hostname, err := os.Hostname()
-	if err != nil {
-		logrus.Errorf("Failed to get hostname: %v", err)
-		return nil
-	}
-
-	i := strings.Index(hostname, ".")
-	if i > 0 {
-		hostname = hostname[i:]
-	}
-
 	var result *client.InstanceInfo
+	selfContainerID := ""
 
-	m.getObjectMap(content.ContainerType).Range(func(key, value interface{}) bool {
-		instance := value.(*client.InstanceInfo)
-		if strings.HasPrefix(instance.ExternalId, hostname) {
-			result = instance
-			return false
+	if selfHostID == "" {
+		cgroupBytes, err := ioutil.ReadFile("/proc/1/cgroup")
+		if err != nil {
+			logrus.Errorf("Failed to read /proc/1/cgroup: %v", err)
+			return nil
 		}
-		return true
-	})
 
-	if result == nil {
-		return nil
+		cgroups := string(cgroupBytes)
+		for _, line := range strings.Split(cgroups, "\n") {
+			parts := strings.Split(line, ":")
+			if len(parts) > 1 && parts[1] == "devices" {
+				parts = strings.Split(line, "/")
+				cid := parts[len(parts)-1]
+				if len(cid) == 64 {
+					selfContainerID = cid
+					break
+				}
+			}
+		}
+
+		if selfContainerID == "" {
+			return nil
+		}
+
+		m.getObjectMap(content.ContainerType).Range(func(key, value interface{}) bool {
+			instance := value.(*client.InstanceInfo)
+			if instance.ExternalId == selfContainerID {
+				result = instance
+				return false
+			}
+			return true
+		})
+
+		if result == nil {
+			return nil
+		}
+
+		if result.HostId != "" {
+			selfHostID = result.HostId
+		}
 	}
 
-	return m.Object(m.IDtoUUID(content.HostType, result.HostId), c)
+	host := m.Object(m.IDtoUUID(content.HostType, selfHostID), c)
+	return host
 }
 
 func (m *Store) Object(uuid string, c content.Client) content.Object {
