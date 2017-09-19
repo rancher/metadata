@@ -30,6 +30,7 @@ func (c *NetworkWrapper) wrapped() interface{} {
 		Name:                c.Network.Name,
 		Policy:              c.Network.Policy,
 		UUID:                c.Network.Uuid,
+		Default:             c.Network.Default,
 		MetadataKind:        "network",
 	}
 }
