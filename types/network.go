@@ -10,4 +10,5 @@ type NetworkResponse struct {
 	Policy              interface{}            `json:"policy"`
 	UUID                string                 `json:"uuid"`
 	MetadataKind        string                 `json:"metadata_kind"`
+	Default             bool                   `json:"is_default"`
 }
