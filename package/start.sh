@@ -1,7 +1,9 @@
 #!/bin/bash
-set -x
+set -x -e
 
-ip addr add 169.254.169.250/32 dev eth0
+if ! ip addr show dev lo | grep -q '169.254.169.250'; then
+    ip addr add 169.254.169.250/32 dev lo
+fi
 
 echo Adding iptables rules
 RANCHER_METADATA_LISTEN_PORT=${RANCHER_METADATA_LISTEN_PORT:-9999}
