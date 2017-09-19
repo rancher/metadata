@@ -143,6 +143,7 @@ func generateLBConfig(response *types.ServiceResponse, service *client.ServiceIn
 			Selector:    rule.Selector,
 			SourcePort:  rule.SourcePort,
 			TargetPort:  rule.TargetPort,
+			Hostname:    rule.Hostname,
 		}
 
 		if rule.InstanceId != "" {
