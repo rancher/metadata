@@ -53,6 +53,7 @@ type PortRule struct {
 	ServiceUUID   string `json:"service_uuid"`
 	SourcePort    int64  `json:"source_port"`
 	TargetPort    int64  `json:"target_port"`
+	Hostname      string `json:"hostname"`
 }
 
 type LoadBalancerCookieStickinessPolicy struct {
