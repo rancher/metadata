@@ -157,7 +157,11 @@ func generateLBConfig(response *types.ServiceResponse, service *client.ServiceIn
 		if rule.ServiceId != "" {
 			target := store.ServiceByID(rule.ServiceId)
 			if target != nil {
-				newRule.Service = fmt.Sprintf("%s/%s", response.StackName, target.Name)
+				targetStack := store.StackByID(target.StackId)
+				if targetStack == nil {
+					continue
+				}
+				newRule.Service = fmt.Sprintf("%s/%s", targetStack.Name, target.Name)
 				newRule.ServiceUUID = target.Uuid
 			}
 		}
