@@ -21,6 +21,10 @@ func NewHostObject(obj interface{}, c content.Client, store content.Store) conte
 }
 
 func (c *HostWrapper) wrapped() interface{} {
+	name := c.Host.Name
+	if name == "" {
+		name = c.Host.Hostname
+	}
 	return &types.HostResponse{
 		AgentIP:         c.Host.AgentIp,
 		AgentState:      c.Host.AgentState,
@@ -29,7 +33,7 @@ func (c *HostWrapper) wrapped() interface{} {
 		Labels:          c.Host.Labels,
 		Memory:          c.Host.Memory,
 		MilliCPU:        c.Host.MilliCpu,
-		Name:            c.Host.Name,
+		Name:            name,
 		State:           c.Host.State,
 		UUID:            c.Host.Uuid,
 		MetadataKind:    "host",
