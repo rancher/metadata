@@ -1,6 +1,8 @@
 #!/bin/bash
 set -x -e
 
+/usr/bin/update-rancher-ssl
+
 if ! ip addr show dev lo | grep -q '169.254.169.250'; then
     ip addr add 169.254.169.250/32 dev lo
 fi
