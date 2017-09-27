@@ -31,6 +31,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 			MetadataKind: "service",
 		},
 	}
+	result.Name = strings.ToLower(result.Name)
 
 	result.KindOutput = result.Kind
 	if result.Kind == "scalingGroup" {
@@ -53,7 +54,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	stack := c.Store.StackByID(result.StackID)
 	if stack != nil {
 		result.StackUUID = stack.UUID
-		result.StackName = stack.Name
+		result.StackName = strings.ToLower(stack.Name)
 	}
 
 	if c.IncludeToken {

@@ -1,6 +1,8 @@
 package content
 
 import (
+	"strings"
+
 	"github.com/rancher/metadata/types"
 )
 
@@ -27,6 +29,7 @@ func (c *Stack) wrapped() interface{} {
 			MetadataKind: "stack",
 		},
 	}
+	result.Name = strings.ToLower(result.Name)
 
 	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
 	if env != nil {

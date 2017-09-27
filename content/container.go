@@ -30,6 +30,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 			MetadataKind: "container",
 		},
 	}
+	container.Name = strings.ToLower(container.Name)
 	container.HostUUID = c.Store.IDtoUUID(HostType, container.HostID)
 	container.NetworkFromContainerUUID = c.Store.IDtoUUID(ContainerType, container.NetworkFromContainerID)
 	container.NetworkUUID = c.Store.IDtoUUID(NetworkType, container.NetworkID)
@@ -46,13 +47,13 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	service := c.Store.ServiceByID(container.ServiceID)
 	if service != nil {
 		container.ServiceUUID = service.UUID
-		container.ServiceName = service.Name
+		container.ServiceName = strings.ToLower(service.Name)
 	}
 
 	stack := c.Store.StackByID(container.StackID)
 	if stack != nil {
 		container.StackUUID = stack.UUID
-		container.StackName = stack.Name
+		container.StackName = strings.ToLower(stack.Name)
 	}
 
 	for _, port := range container.Ports {
