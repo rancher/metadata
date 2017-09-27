@@ -1,6 +1,8 @@
 package convert
 
 import (
+	"strings"
+
 	"github.com/rancher/go-rancher/v3"
 	"github.com/rancher/metadata/content"
 	"github.com/rancher/metadata/types"
@@ -27,7 +29,7 @@ func (c *Stack) wrapped() interface{} {
 		ID:              c.Stack.Id,
 		EnvironmentUUID: c.Stack.EnvironmentUuid,
 		HealthState:     c.Stack.HealthState,
-		Name:            c.Stack.Name,
+		Name:            strings.ToLower(c.Stack.Name),
 		UUID:            c.Stack.Uuid,
 		MetadataKind:    "stack",
 	}

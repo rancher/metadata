@@ -36,7 +36,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 		Labels:              c.Container.Labels,
 		MemoryReservation:   c.Container.MemoryReservation,
 		MilliCPUReservation: c.Container.MilliCpuReservation,
-		Name:                c.Container.Name,
+		Name:                strings.ToLower(c.Container.Name),
 		PrimaryIP:           c.Container.PrimaryIp,
 		PrimaryMacAddress:   c.Container.PrimaryMacAddress,
 		StartCount:          c.Container.StartCount,
@@ -77,13 +77,13 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	service := c.Store.ServiceByID(c.Container.ServiceId)
 	if service != nil {
 		container.ServiceUUID = service.Uuid
-		container.ServiceName = service.Name
+		container.ServiceName = strings.ToLower(service.Name)
 	}
 
 	stack := c.Store.StackByID(c.Container.StackId)
 	if stack != nil {
 		container.StackUUID = stack.Uuid
-		container.StackName = stack.Name
+		container.StackName = strings.ToLower(stack.Name)
 	}
 
 	for _, port := range c.Container.Ports {

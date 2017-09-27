@@ -37,10 +37,9 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		Kind:            c.Service.Kind,
 		Labels:          c.Service.Labels,
 		Metadata:        c.Service.Metadata,
-		Name:            c.Service.Name,
+		Name:            strings.ToLower(c.Service.Name),
 		Scale:           c.Service.Scale,
 		Selector:        c.Service.Selector,
-		Sidekicks:       c.Service.Sidekicks,
 		State:           c.Service.State,
 		Token:           c.Service.Token,
 		UUID:            c.Service.Uuid,
@@ -50,6 +49,14 @@ func (c *ServiceWrapper) wrapped() interface{} {
 
 	if result.Kind == "scalingGroup" {
 		result.Kind = "service"
+	}
+
+	if c.Service.Sidekicks != nil {
+		var lowercased []string
+		for _, value := range c.Service.Sidekicks {
+			lowercased = append(lowercased, strings.ToLower(value))
+		}
+		result.Sidekicks = lowercased
 	}
 
 	if c.Service.HealthCheck.Interval != 0 {
@@ -93,7 +100,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	stack := c.Store.StackByID(c.Service.StackId)
 	if stack != nil {
 		result.StackUUID = stack.Uuid
-		result.StackName = stack.Name
+		result.StackName = strings.ToLower(stack.Name)
 	}
 
 	if !c.IncludeToken {
@@ -101,7 +108,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	}
 
 	result.LBConfig = generateLBConfig(result, c.Service, c.Store)
-	result.Links = resolveServiceLinks(result, c.Service, c.Store)
+	result.Links = c.resolveServiceLinks(result, c.Service, c.Store)
 
 	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
 	if env != nil {
@@ -171,7 +178,7 @@ func generateLBConfig(response *types.ServiceResponse, service *client.ServiceIn
 	return result
 }
 
-func resolveServiceLinks(response *types.ServiceResponse, service *client.ServiceInfo, store content.Store) map[string]interface{} {
+func (c *ServiceWrapper) resolveServiceLinks(response *types.ServiceResponse, service *client.ServiceInfo, store content.Store) map[string]interface{} {
 	result := map[string]interface{}{}
 
 	for _, link := range service.Links {
@@ -179,21 +186,26 @@ func resolveServiceLinks(response *types.ServiceResponse, service *client.Servic
 		if alias == "" {
 			alias = link.Name
 		}
+		alias = strings.ToLower(alias)
 
-		stackName := response.StackName
-		containerName := link.Name
-		parts := strings.SplitN(link.Name, "/", 2)
-		if len(parts) == 2 {
-			stackName = parts[0]
-			containerName = parts[1]
-		}
-
-		target := store.ServiceByName(service.EnvironmentUuid, stackName, containerName)
-		if target == nil {
-			result[alias] = nil
+		if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
+			result[strings.ToLower(link.Name)] = alias
 		} else {
-			result[alias] = target.Uuid
+			stackName := response.StackName
+			serviceName := link.Name
+			parts := strings.SplitN(link.Name, "/", 2)
+			if len(parts) == 2 {
+				stackName = parts[0]
+				serviceName = parts[1]
+			}
+			target := store.ServiceByName(service.EnvironmentUuid, stackName, serviceName)
+			if target == nil {
+				result[alias] = nil
+			} else {
+				result[alias] = target.Uuid
+			}
 		}
+
 	}
 
 	if len(result) == 0 {
