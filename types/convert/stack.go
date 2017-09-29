@@ -29,9 +29,13 @@ func (c *Stack) wrapped() interface{} {
 		ID:              c.Stack.Id,
 		EnvironmentUUID: c.Stack.EnvironmentUuid,
 		HealthState:     c.Stack.HealthState,
-		Name:            strings.ToLower(c.Stack.Name),
 		UUID:            c.Stack.Uuid,
 		MetadataKind:    "stack",
+	}
+	if c.Client.Version == content.V1 {
+		result.Name = c.Stack.Name
+	} else {
+		result.Name = strings.ToLower(c.Stack.Name)
 	}
 
 	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)

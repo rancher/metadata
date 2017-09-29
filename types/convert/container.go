@@ -36,7 +36,6 @@ func (c *ContainerWrapper) wrapped() interface{} {
 		Labels:              c.Container.Labels,
 		MemoryReservation:   c.Container.MemoryReservation,
 		MilliCPUReservation: c.Container.MilliCpuReservation,
-		Name:                strings.ToLower(c.Container.Name),
 		PrimaryIP:           c.Container.PrimaryIp,
 		PrimaryMacAddress:   c.Container.PrimaryMacAddress,
 		StartCount:          c.Container.StartCount,
@@ -47,6 +46,12 @@ func (c *ContainerWrapper) wrapped() interface{} {
 
 	if c.Container.HealthState != "" {
 		container.HealthState = &c.Container.HealthState
+	}
+
+	if c.Client.Version == content.V1 {
+		container.Name = c.Container.Name
+	} else {
+		container.Name = strings.ToLower(c.Container.Name)
 	}
 
 	if c.Container.HealthCheck.Interval != 0 {
@@ -77,13 +82,21 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	service := c.Store.ServiceByID(c.Container.ServiceId)
 	if service != nil {
 		container.ServiceUUID = service.Uuid
-		container.ServiceName = strings.ToLower(service.Name)
+		if c.Client.Version == content.V1 {
+			container.ServiceName = service.Name
+		} else {
+			container.ServiceName = strings.ToLower(service.Name)
+		}
 	}
 
 	stack := c.Store.StackByID(c.Container.StackId)
 	if stack != nil {
 		container.StackUUID = stack.Uuid
-		container.StackName = strings.ToLower(stack.Name)
+		if c.Client.Version == content.V1 {
+			container.StackName = stack.Name
+		} else {
+			container.StackName = strings.ToLower(stack.Name)
+		}
 	}
 
 	for _, port := range c.Container.Ports {

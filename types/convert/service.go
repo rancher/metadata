@@ -37,7 +37,6 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		Kind:            c.Service.Kind,
 		Labels:          c.Service.Labels,
 		Metadata:        c.Service.Metadata,
-		Name:            strings.ToLower(c.Service.Name),
 		Scale:           c.Service.Scale,
 		Selector:        c.Service.Selector,
 		State:           c.Service.State,
@@ -51,12 +50,18 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		result.Kind = "service"
 	}
 
-	if c.Service.Sidekicks != nil {
-		var lowercased []string
-		for _, value := range c.Service.Sidekicks {
-			lowercased = append(lowercased, strings.ToLower(value))
+	if c.Client.Version == content.V1 {
+		result.Name = c.Service.Name
+		result.Sidekicks = c.Service.Sidekicks
+	} else {
+		result.Name = strings.ToLower(c.Service.Name)
+		if c.Service.Sidekicks != nil {
+			var lowercased []string
+			for _, value := range c.Service.Sidekicks {
+				lowercased = append(lowercased, strings.ToLower(value))
+			}
+			result.Sidekicks = lowercased
 		}
-		result.Sidekicks = lowercased
 	}
 
 	if c.Service.HealthCheck.Interval != 0 {
@@ -100,7 +105,11 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	stack := c.Store.StackByID(c.Service.StackId)
 	if stack != nil {
 		result.StackUUID = stack.Uuid
-		result.StackName = strings.ToLower(stack.Name)
+		if c.Client.Version == content.V1 {
+			result.StackName = stack.Name
+		} else {
+			result.StackName = strings.ToLower(stack.Name)
+		}
 	}
 
 	if !c.IncludeToken {
@@ -186,10 +195,11 @@ func (c *ServiceWrapper) resolveServiceLinks(response *types.ServiceResponse, se
 		if alias == "" {
 			alias = link.Name
 		}
-		alias = strings.ToLower(alias)
 
-		if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
-			result[strings.ToLower(link.Name)] = alias
+		if c.Client.Version == content.V1 {
+			result[link.Name] = alias
+		} else if c.Client.Version == content.V2 {
+			result[strings.ToLower(link.Name)] = strings.ToLower(alias)
 		} else {
 			stackName := response.StackName
 			serviceName := link.Name
@@ -200,9 +210,9 @@ func (c *ServiceWrapper) resolveServiceLinks(response *types.ServiceResponse, se
 			}
 			target := store.ServiceByName(service.EnvironmentUuid, stackName, serviceName)
 			if target == nil {
-				result[alias] = nil
+				result[strings.ToLower(alias)] = nil
 			} else {
-				result[alias] = target.Uuid
+				result[strings.ToLower(alias)] = target.Uuid
 			}
 		}
 
