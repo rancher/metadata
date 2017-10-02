@@ -5,7 +5,7 @@ const (
 )
 
 type Host struct {
-	Resource
+	Resource `yaml:"-"`
 
 	AgentId string `json:"agentId,omitempty" yaml:"agent_id,omitempty"`
 
@@ -57,6 +57,8 @@ type Host struct {
 
 	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty"`
 
+	Imported bool `json:"imported,omitempty" yaml:"imported,omitempty"`
+
 	Info interface{} `json:"info,omitempty" yaml:"info,omitempty"`
 
 	InstanceIds []string `json:"instanceIds,omitempty" yaml:"instance_ids,omitempty"`
@@ -74,8 +76,6 @@ type Host struct {
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 
 	NodeName string `json:"nodeName,omitempty" yaml:"node_name,omitempty"`
-
-	PacketConfig *PacketConfig `json:"packetConfig,omitempty" yaml:"packet_config,omitempty"`
 
 	PublicEndpoints []PublicEndpoint `json:"publicEndpoints,omitempty" yaml:"public_endpoints,omitempty"`
 

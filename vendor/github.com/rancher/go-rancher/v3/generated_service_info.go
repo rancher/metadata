@@ -5,9 +5,11 @@ const (
 )
 
 type ServiceInfo struct {
-	Resource
+	Resource `yaml:"-"`
 
 	EnvironmentUuid string `json:"environmentUuid,omitempty" yaml:"environment_uuid,omitempty"`
+
+	Expose []string `json:"expose,omitempty" yaml:"expose,omitempty"`
 
 	ExternalIps []string `json:"externalIps,omitempty" yaml:"external_ips,omitempty"`
 

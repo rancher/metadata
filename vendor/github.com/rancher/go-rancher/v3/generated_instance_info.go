@@ -5,7 +5,7 @@ const (
 )
 
 type InstanceInfo struct {
-	Resource
+	Resource `yaml:"-"`
 
 	AccountId string `json:"accountId,omitempty" yaml:"account_id,omitempty"`
 
@@ -24,6 +24,8 @@ type InstanceInfo struct {
 	EnvironmentUuid string `json:"environmentUuid,omitempty" yaml:"environment_uuid,omitempty"`
 
 	ExitCode int64 `json:"exitCode,omitempty" yaml:"exit_code,omitempty"`
+
+	Expose []string `json:"expose,omitempty" yaml:"expose,omitempty"`
 
 	ExternalId string `json:"externalId,omitempty" yaml:"external_id,omitempty"`
 

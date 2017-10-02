@@ -5,15 +5,13 @@ const (
 )
 
 type Project struct {
-	Resource
+	Resource `yaml:"-"`
 
 	ClusterId string `json:"clusterId,omitempty" yaml:"cluster_id,omitempty"`
 
 	ClusterOwner bool `json:"clusterOwner,omitempty" yaml:"cluster_owner,omitempty"`
 
 	Created string `json:"created,omitempty" yaml:"created,omitempty"`
-
-	DefaultNetworkId string `json:"defaultNetworkId,omitempty" yaml:"default_network_id,omitempty"`
 
 	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 
