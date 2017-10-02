@@ -99,7 +99,11 @@ func respondText(w http.ResponseWriter, req *http.Request, val interface{}) {
 				}
 			}
 		} else {
-			fmt.Fprint(w, v)
+			if reflect.ValueOf(val).Kind() == reflect.Ptr && reflect.ValueOf(val).IsNil() {
+				fmt.Fprint(w, "")
+			} else {
+				fmt.Fprint(w, v)
+			}
 		}
 	}
 }
