@@ -100,6 +100,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 		}
 	}
 
+	container.Ports = []string{}
 	for _, port := range c.Container.Ports {
 		portString := types.PublicEndpoint{
 			AgentIPAddress: port.AgentIpAddress,
@@ -141,6 +142,7 @@ func setupNetworking(response *types.ContainerResponse, container *client.Instan
 		}
 	}
 
+	response.IPs = []string{}
 	if response.PrimaryIP != "" {
 		response.IPs = []string{response.PrimaryIP}
 	}
@@ -169,10 +171,6 @@ func resolveContainerLinks(response *types.ContainerResponse, container *client.
 		} else {
 			result[alias] = target.Uuid
 		}
-	}
-
-	if len(result) == 0 {
-		return nil
 	}
 
 	return result

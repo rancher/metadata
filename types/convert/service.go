@@ -62,6 +62,8 @@ func (c *ServiceWrapper) wrapped() interface{} {
 				lowercased = append(lowercased, strings.ToLower(value))
 			}
 			result.Sidekicks = lowercased
+		} else {
+			result.Sidekicks = []string{}
 		}
 	}
 
@@ -218,10 +220,5 @@ func (c *ServiceWrapper) resolveServiceLinks(response *types.ServiceResponse, se
 		}
 
 	}
-
-	if len(result) == 0 {
-		return nil
-	}
-
 	return result
 }
