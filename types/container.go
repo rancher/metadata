@@ -30,6 +30,7 @@ type ContainerResponse struct {
 	NetworkFromContainerUUID string                 `json:"network_from_container_uuid"`
 	NetworkUUID              string                 `json:"network_uuid"`
 	Ports                    []string               `json:"ports"`
+	Expose                   []string               `json:"expose"`
 	ServiceIndex             string                 `json:"service_index"`
 	ServiceUUID              string                 `json:"service_uuid"`
 	ServiceName              string                 `json:"service_name"`

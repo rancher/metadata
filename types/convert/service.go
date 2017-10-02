@@ -43,6 +43,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		Token:           c.Service.Token,
 		UUID:            c.Service.Uuid,
 		VIP:             c.Service.Vip,
+		Expose:          c.Service.Expose,
 		MetadataKind:    "service",
 	}
 

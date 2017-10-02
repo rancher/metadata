@@ -25,6 +25,7 @@ type ServiceResponse struct {
 	Kind         string           `json:"kind"`
 	MetadataKind string           `json:"metadata_kind"`
 	Ports        []string         `json:"ports"`
+	Expose       []string         `json:"expose"`
 	StackName    string           `json:"stack_name"`
 	StackUUID    string           `json:"stack_uuid"`
 	Token        string           `json:"token"`

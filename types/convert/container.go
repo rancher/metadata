@@ -41,6 +41,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 		StartCount:          c.Container.StartCount,
 		State:               c.Container.State,
 		UUID:                c.Container.Uuid,
+		Expose:              c.Container.Expose,
 		MetadataKind:        "container",
 	}
 
