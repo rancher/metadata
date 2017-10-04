@@ -32,17 +32,34 @@ func (c *Stack) wrapped() interface{} {
 		UUID:            c.Stack.Uuid,
 		MetadataKind:    "stack",
 	}
-	if c.Client.Version == content.V1 {
-		result.Name = c.Stack.Name
-	} else {
-		result.Name = strings.ToLower(c.Stack.Name)
-	}
 
 	env := c.Store.EnvironmentByUUID(result.EnvironmentUUID)
 	if env != nil {
 		result.EnvironmentName = env.Name
 	}
 
-	result.Services = c.Store.ByStack(content.ServiceType, c.Client, result.UUID)
-	return result
+	if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
+		result.Name = c.Stack.Name
+	} else {
+		result.Name = strings.ToLower(c.Stack.Name)
+	}
+
+	if c.Client.Version == content.V1 {
+		resultVersioned := &types.StackResponseV1{
+			StackResponse: result,
+			Services:      []string{},
+		}
+
+		for _, svc := range c.Store.ByStack(content.ServiceType, c.Client, result.UUID) {
+			resultVersioned.Services = append(resultVersioned.Services, svc.Name())
+		}
+
+		return resultVersioned
+	}
+
+	resultVersioned := &types.StackResponseV2V3V4{
+		StackResponse: result,
+		Services:      c.Store.ByStack(content.ServiceType, c.Client, result.UUID),
+	}
+	return resultVersioned
 }

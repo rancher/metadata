@@ -51,7 +51,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		result.Kind = "service"
 	}
 
-	if c.Client.Version == content.V1 {
+	if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
 		result.Name = c.Service.Name
 		result.Sidekicks = c.Service.Sidekicks
 	} else {
@@ -79,14 +79,6 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		}
 	}
 
-	result.Containers = []content.Object{}
-	for _, containerID := range c.Service.InstanceIds {
-		container := c.Store.ContainerByID(containerID)
-		if container != nil {
-			result.Containers = append(result.Containers, NewContainerObject(container, c.Client, c.Store))
-		}
-	}
-
 	result.Ports = []string{}
 	for _, port := range c.Service.Ports {
 		portString := types.PublicEndpoint{
@@ -108,7 +100,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	stack := c.Store.StackByID(c.Service.StackId)
 	if stack != nil {
 		result.StackUUID = stack.Uuid
-		if c.Client.Version == content.V1 {
+		if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
 			result.StackName = stack.Name
 		} else {
 			result.StackName = strings.ToLower(stack.Name)
@@ -127,7 +119,30 @@ func (c *ServiceWrapper) wrapped() interface{} {
 		result.EnvironmentName = env.Name
 	}
 
-	return result
+	if c.Client.Version == content.V1 {
+		resultVersioned := &types.ServiceResponseV1{
+			ServiceResponse: result,
+			Containers:      []string{},
+		}
+		for _, containerID := range c.Service.InstanceIds {
+			container := c.Store.ContainerByID(containerID)
+			if container != nil {
+				resultVersioned.Containers = append(resultVersioned.Containers, container.Name)
+			}
+		}
+		return resultVersioned
+	}
+	resultVersioned := &types.ServiceResponseV2V3V4{
+		ServiceResponse: result,
+		Containers:      []content.Object{},
+	}
+	for _, containerID := range c.Service.InstanceIds {
+		container := c.Store.ContainerByID(containerID)
+		if container != nil {
+			resultVersioned.Containers = append(resultVersioned.Containers, NewContainerObject(container, c.Client, c.Store))
+		}
+	}
+	return resultVersioned
 }
 
 func generateLBConfig(response *types.ServiceResponse, service *client.ServiceInfo, store content.Store) *types.LBConfig {
@@ -199,9 +214,9 @@ func (c *ServiceWrapper) resolveServiceLinks(response *types.ServiceResponse, se
 			alias = link.Name
 		}
 
-		if c.Client.Version == content.V1 {
+		if c.Client.Version == content.V2 || c.Client.Version == content.V1 {
 			result[link.Name] = alias
-		} else if c.Client.Version == content.V2 {
+		} else if c.Client.Version == content.V3 {
 			result[strings.ToLower(link.Name)] = strings.ToLower(alias)
 		} else {
 			stackName := response.StackName

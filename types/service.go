@@ -21,17 +21,26 @@ type ServiceResponse struct {
 	VIP             string                 `json:"vip"`
 	EnvironmentName string                 `json:"environment_name"`
 
-	Containers   []content.Object `json:"containers"`
-	Kind         string           `json:"kind"`
-	MetadataKind string           `json:"metadata_kind"`
-	Ports        []string         `json:"ports"`
-	Expose       []string         `json:"expose"`
-	StackName    string           `json:"stack_name"`
-	StackUUID    string           `json:"stack_uuid"`
-	Token        string           `json:"token"`
+	Kind         string   `json:"kind"`
+	MetadataKind string   `json:"metadata_kind"`
+	Ports        []string `json:"ports"`
+	Expose       []string `json:"expose"`
+	StackName    string   `json:"stack_name"`
+	StackUUID    string   `json:"stack_uuid"`
+	Token        string   `json:"token"`
 
 	LBConfig *LBConfig              `json:"lb_config"`
 	Links    map[string]interface{} `json:"links"`
+}
+
+type ServiceResponseV1 struct {
+	*ServiceResponse
+	Containers []string `json:"containers"`
+}
+
+type ServiceResponseV2V3V4 struct {
+	*ServiceResponse
+	Containers []content.Object `json:"containers"`
 }
 
 type LBConfig struct {

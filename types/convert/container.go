@@ -49,7 +49,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 		container.HealthState = &c.Container.HealthState
 	}
 
-	if c.Client.Version == content.V1 {
+	if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
 		container.Name = c.Container.Name
 	} else {
 		container.Name = strings.ToLower(c.Container.Name)
@@ -83,7 +83,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	service := c.Store.ServiceByID(c.Container.ServiceId)
 	if service != nil {
 		container.ServiceUUID = service.Uuid
-		if c.Client.Version == content.V1 {
+		if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
 			container.ServiceName = service.Name
 		} else {
 			container.ServiceName = strings.ToLower(service.Name)
@@ -93,7 +93,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	stack := c.Store.StackByID(c.Container.StackId)
 	if stack != nil {
 		container.StackUUID = stack.Uuid
-		if c.Client.Version == content.V1 {
+		if c.Client.Version == content.V1 || c.Client.Version == content.V2 {
 			container.StackName = stack.Name
 		} else {
 			container.StackName = strings.ToLower(stack.Name)
