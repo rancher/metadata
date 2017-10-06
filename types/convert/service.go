@@ -80,6 +80,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 	}
 
 	result.Ports = []string{}
+	ignoreBindAll := c.Client.Version == content.V1 || c.Client.Version == content.V2
 	for _, port := range c.Service.Ports {
 		portString := types.PublicEndpoint{
 			AgentIPAddress: port.AgentIpAddress,
@@ -93,7 +94,7 @@ func (c *ServiceWrapper) wrapped() interface{} {
 			Protocol:       port.Protocol,
 			PublicPort:     port.PublicPort,
 			ServiceID:      port.ServiceId,
-		}.String()
+		}.String(ignoreBindAll)
 		result.Ports = append(result.Ports, portString)
 	}
 

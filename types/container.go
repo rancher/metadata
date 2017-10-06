@@ -72,6 +72,10 @@ type PublicEndpoint struct {
 	ServiceID      string `json:"service_id"`
 }
 
-func (p PublicEndpoint) String() string {
-	return fmt.Sprintf("%s:%d:%d/%s", p.BindIPAddress, p.PublicPort, p.PrivatePort, p.Protocol)
+func (p PublicEndpoint) String(ignoreBindAll bool) string {
+	ip := p.BindIPAddress
+	if p.BindIPAddress == "0.0.0.0" && ignoreBindAll {
+		ip = p.AgentIPAddress
+	}
+	return fmt.Sprintf("%s:%d:%d/%s", ip, p.PublicPort, p.PrivatePort, p.Protocol)
 }

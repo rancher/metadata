@@ -101,6 +101,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 	}
 
 	container.Ports = []string{}
+	ignoreBindAll := c.Client.Version == content.V1 || c.Client.Version == content.V2
 	for _, port := range c.Container.Ports {
 		portString := types.PublicEndpoint{
 			AgentIPAddress: port.AgentIpAddress,
@@ -114,7 +115,7 @@ func (c *ContainerWrapper) wrapped() interface{} {
 			Protocol:       port.Protocol,
 			PublicPort:     port.PublicPort,
 			ServiceID:      port.ServiceId,
-		}.String()
+		}.String(ignoreBindAll)
 		container.Ports = append(container.Ports, portString)
 	}
 
