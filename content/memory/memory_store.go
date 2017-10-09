@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -363,12 +364,14 @@ func (m *Store) SelfHost(c content.Client) content.Object {
 		for _, line := range strings.Split(cgroups, "\n") {
 			parts := strings.Split(line, ":")
 			if len(parts) > 1 && parts[1] == "devices" {
-				parts = strings.Split(line, "/")
-				cid := parts[len(parts)-1]
-				if len(cid) == 64 {
-					selfContainerID = cid
-					break
+				re := regexp.MustCompile("[A-Za-z0-9]{64}")
+				matchedIDs := re.FindAllString(line, -1)
+				if len(matchedIDs) > 1 {
+					selfContainerID = matchedIDs[len(matchedIDs)-1]
+				} else {
+					selfContainerID = matchedIDs[0]
 				}
+				break
 			}
 		}
 
